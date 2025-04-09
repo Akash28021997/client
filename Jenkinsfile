@@ -20,9 +20,12 @@ pipeline {
             }
             steps {
                 dir("${env.BACKEND_DIR}") {
-                    echo 'Installing backend dependencies...'
                     script {
-                        isUnix() ? sh 'npm install' : bat 'npm install'
+                        if (isUnix()) {
+                            sh 'npm install'
+                        } else {
+                            bat 'npm install'
+                        }
                     }
                 }
             }
@@ -38,7 +41,11 @@ pipeline {
                     if (pkg.scripts?.test && !pkg.scripts.test.contains('no test specified')) {
                         dir("${env.BACKEND_DIR}") {
                             echo 'Running backend tests...'
-                            isUnix() ? sh 'npm test' : bat 'npm test'
+                            if (isUnix()) {
+                                sh 'npm test'
+                            } else {
+                                bat 'npm test'
+                            }
                         }
                     } else {
                         echo 'Skipping backend tests: no test script defined in package.json'
@@ -53,9 +60,12 @@ pipeline {
             }
             steps {
                 dir("${env.FRONTEND_DIR}") {
-                    echo 'Installing frontend dependencies...'
                     script {
-                        isUnix() ? sh 'npm install' : bat 'npm install'
+                        if (isUnix()) {
+                            sh 'npm install'
+                        } else {
+                            bat 'npm install'
+                        }
                     }
                 }
             }
@@ -67,9 +77,12 @@ pipeline {
             }
             steps {
                 dir("${env.FRONTEND_DIR}") {
-                    echo 'Building frontend...'
                     script {
-                        isUnix() ? sh 'npm run build' : bat 'npm run build'
+                        if (isUnix()) {
+                            sh 'npm run build'
+                        } else {
+                            bat 'npm run build'
+                        }
                     }
                 }
             }
@@ -77,16 +90,20 @@ pipeline {
 
         stage('Deploy') {
             when {
-                expression { fileExists("scripts/deploy.bat") || fileExists("scripts/deploy.sh") }
+                expression {
+                    return fileExists('scripts/deploy.sh') || fileExists('scripts/deploy.bat')
+                }
             }
             steps {
-                echo 'Deploying application...'
                 script {
-                    if (isUnix()) {
+                    echo 'Deploying application...'
+                    if (isUnix() && fileExists('scripts/deploy.sh')) {
                         sh 'chmod +x scripts/deploy.sh'
                         sh './scripts/deploy.sh'
-                    } else {
+                    } else if (!isUnix() && fileExists('scripts\\deploy.bat')) {
                         bat 'scripts\\deploy.bat'
+                    } else {
+                        echo 'No deploy script found for this OS.'
                     }
                 }
             }
@@ -98,13 +115,13 @@ pipeline {
             echo 'Pipeline execution complete.'
         }
         success {
-            echo 'Build succeeded!'
+            echo '🎉 Build succeeded!'
         }
         failure {
-            echo 'Build failed.'
+            echo '❌ Build failed.'
         }
         unstable {
-            echo 'Build unstable.'
+            echo '⚠️ Build unstable.'
         }
     }
 }
