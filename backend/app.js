@@ -26,7 +26,7 @@ const app = express();
 app.use(express.json());
 // Enable CORS for the application
 app.use(
-  cors({ origin: ["http://192.168.34.50:3000", "http://192.168.1.110:3004"] })
+  cors({ origin: ["http://192.168.1.191:3000", "http://192.168.1.110:3004"] })
 );
 // Set up the API routes under the "/api" prefix
 app.use("/api", apiRoutes);
