@@ -81,7 +81,7 @@ pipeline {
                         if (isUnix()) {
                             sh 'npm run build'
                         } else {
-                            bat 'npm run build'
+                            bat "set CI=& npm run build"
                         }
                     }
                 }
