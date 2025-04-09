@@ -23,10 +23,17 @@ pipeline {
 
         stage('Run Backend Tests') {
             steps {
-                dir("${BACKEND_DIR}") {
-                    bat 'npm test'
+                script {
+                    def pkg = readJSON file: 'backend/package.json'
+                    if (pkg.scripts?.test && !pkg.scripts.test.contains('no test specified')) {
+                        dir("backend") {
+                            bat 'npm test'
+                        }
+                    } else {
+                        echo 'Skipping tests: no test script defined in package.json'
+                    }
                 }
-            }
+        }
         }
 
         stage('Install Frontend Dependencies') {
